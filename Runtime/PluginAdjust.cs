@@ -17,6 +17,12 @@ namespace PluginSet.Adjust
         private static readonly Logger Logger = LoggerManager.GetLogger("Adjust");
         private static StringBuilder sb = new StringBuilder();
 
+        private struct EventRecord
+        {
+            public string name;
+            public Dictionary<string, object> @params;
+        }
+
         private const string EventAttributeCallback = "adjust_attribute_callback";
         private const string EventDeferredDeeplink = "adjust_deferred_deep_link";
         
@@ -35,8 +41,12 @@ namespace PluginSet.Adjust
 
         private string _adjustAttributionJson;
         private string _deeplink;
+
+        private bool _sdkInited;
         
         private readonly Dictionary<string, string> _eventTokens = new Dictionary<string, string>();
+
+        private readonly List<EventRecord> _unTrackEvents = new List<EventRecord>();
 
         protected override void Init(PluginSetConfig config)
         {
@@ -86,6 +96,13 @@ namespace PluginSet.Adjust
             var obj = new GameObject("Adjust");
             obj.AddComponent<com.adjust.sdk.Adjust>();
             com.adjust.sdk.Adjust.start(config);
+            _sdkInited = true;
+
+            foreach (var info in _unTrackEvents)
+            {
+                CustomEvent(info.name, info.@params);
+            }
+            _unTrackEvents.Clear();
         }
 
         private void OnEventSuccessCallback(AdjustEventSuccess obj)
@@ -129,6 +146,16 @@ namespace PluginSet.Adjust
         
         public void CustomEvent(string customEventName, Dictionary<string, object> eventData = null)
         {
+            if (!_sdkInited)
+            {
+                _unTrackEvents.Add(new EventRecord()
+                {
+                    name = customEventName,
+                    @params = eventData
+                });
+                return;
+            }
+            
             if (!_eventTokens.TryGetValue(customEventName, out var eventToken))
             {
                 if (_ignoreEventWithoutToken)
