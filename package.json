@@ -1,0 +1,18 @@
+{
+  "name": "com.pluginset.adjust",
+  "displayName": "PluginSet Adjust SDK",
+  "version": "1.0.13",
+  "unity": "2018.4",
+  "description": "Adjust SDK in PluginSet.",
+  "keywords": [
+    "pluginset",
+    "adjust"
+  ],
+  "dependencies": {
+    "com.pluginset.core": "1.0.0"
+  },
+  "author": {
+    "name": "LyneXiao",
+    "email": "lixonxs@icloud.com"
+  }
+}
